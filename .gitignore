@@ -1,0 +1,34 @@
+# Éditeurs et IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# Systèmes
+.DS_Store
+Thumbs.db
+
+# Journaux et sorties SQL
+*.log
+*.lst
+
+# Secrets et configuration locale
+.env
+*.local
+
+# Bases de données locales
+*.db
+*.sqlite
+*.sqlite3
+
+# Compilation LaTeX (le PDF final du rapport reste versionné)
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.out
+*.synctex.gz
+*.toc
+
+
