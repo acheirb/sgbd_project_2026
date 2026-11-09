@@ -101,10 +101,6 @@ CREATE TABLE emprunt
     CONSTRAINT ck_emprunt_retour CHECK ((date_heure_retour IS NULL) = (id_station_arrivee IS NULL))
 );
 
--- Un adhérent ne peut avoir qu'un seul emprunt en cours.
-CREATE UNIQUE INDEX ux_emprunt_en_cours_adherent ON emprunt (id_adherent) WHERE date_heure_retour IS NULL;
--- Un vélo ne peut pas faire l'objet de plusieurs emprunts simultanés.
-CREATE UNIQUE INDEX ux_emprunt_en_cours_velo     ON emprunt (reference)   WHERE date_heure_retour IS NULL;
 
 CREATE TABLE intervention
 (
