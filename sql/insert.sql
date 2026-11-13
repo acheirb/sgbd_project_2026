@@ -1,9 +1,4 @@
 
--- Toujours AJOUTER les nouvelles lignes À LA FIN d'une liste,
--- sinon les id suivants sont décalés.
-
-BEGIN;
-
 
 INSERT INTO commune (nom_commune, code_postal) VALUES
     ('Talence',   '33400'),   
@@ -134,4 +129,4 @@ INSERT INTO intervention (reference, date_intervention, nature, duree_heures) VA
     ('V021', CURRENT_DATE - 30,  'Cadre fissuré : diagnostic',  4.0),
     ('V005', CURRENT_DATE - 400, 'Réglage du dérailleur',       0.5);
 
-COMMIT;
+
