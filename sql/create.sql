@@ -84,7 +84,7 @@ CREATE TABLE emprunt
 (
     id_emprunt                      SERIAL                  NOT NULL,
     date_heure_depart               TIMESTAMP               NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    date_heure_retour               TIMESTAMP                       ,
+    date_heure_arrivee               TIMESTAMP                       ,
     distance_parcourue              NUMERIC(6,2)                    ,
     id_adherent                     INTEGER                 NOT NULL,
     reference                       VARCHAR(10)             NOT NULL,
@@ -95,10 +95,10 @@ CREATE TABLE emprunt
     CONSTRAINT fk_emprunt_velo FOREIGN KEY (reference) REFERENCES velo (reference),
     CONSTRAINT fk_emprunt_station_depart FOREIGN KEY (id_station_depart) REFERENCES station (id_station),
     CONSTRAINT fk_emprunt_station_arrivee FOREIGN KEY (id_station_arrivee) REFERENCES station (id_station),
-    CONSTRAINT ck_emprunt_dates CHECK (date_heure_retour IS NULL OR date_heure_retour > date_heure_depart),
+    CONSTRAINT ck_emprunt_dates CHECK (date_heure_arrivee IS NULL OR date_heure_arrivee > date_heure_depart),
     CONSTRAINT ck_emprunt_distance CHECK (distance_parcourue IS NULL OR distance_parcourue >= 0),
-    -- la date de retour et la station d'arrivée sont renseignées ensemble
-    CONSTRAINT ck_emprunt_retour CHECK ((date_heure_retour IS NULL) = (id_station_arrivee IS NULL))
+    -- la date d'arrivee et la station d'arrivée sont renseignées ensemble
+    CONSTRAINT ck_emprunt_arrivee CHECK ((date_heure_arrivee IS NULL) = (id_station_arrivee IS NULL))
 );
 
 

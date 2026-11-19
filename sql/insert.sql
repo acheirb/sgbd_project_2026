@@ -83,7 +83,7 @@ INSERT INTO adherent (nom, prenom, adresse, email, telephone, date_adhesion, id_
 
 
 INSERT INTO emprunt (reference, id_adherent, id_station_depart, date_heure_depart,
-                     id_station_arrivee, date_heure_retour, distance_parcourue) VALUES
+                     id_station_arrivee, date_heure_arrivee, distance_parcourue) VALUES
     -- V001 : 11 trajets
     ('V001', 4, 1, CURRENT_DATE - 28 + TIME '08:10', 3, CURRENT_DATE - 28 + TIME '08:20', 0.9),
     ('V001', 5, 3, CURRENT_DATE - 26 + TIME '17:30', 1, CURRENT_DATE - 26 + TIME '17:40', 0.8),
