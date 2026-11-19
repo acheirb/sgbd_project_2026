@@ -113,8 +113,3 @@ CREATE TABLE intervention
     CONSTRAINT fk_intervention_velo FOREIGN KEY (reference) REFERENCES velo (reference),
     CONSTRAINT ck_intervention_duree CHECK (duree_heures > 0)
 );
-
--- À faire plus tard (triggers) :
---   - un vélo ne peut être emprunté que s'il est disponible et
---     si sa batterie est suffisante ;
---   - une station ne peut pas accueillir plus de vélos que nb_bornes.
