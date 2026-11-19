@@ -1,0 +1,56 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, sans-serif; color: #222; background: #f4f6f8; }
+
+header { display: flex; align-items: center; gap: 2rem; padding: .8rem 2rem;
+         background: #1f6f50; color: #fff; }
+header nav a { color: #d6efe4; text-decoration: none; margin-right: 1.2rem; }
+header nav a.actif, header nav a:hover { color: #fff; border-bottom: 2px solid #fff; }
+
+main { max-width: 1200px; margin: 0 auto; padding: 1rem 2rem 3rem; }
+h1 { margin-top: .5rem; }
+h2 { font-size: 1.15rem; margin-top: 0; }
+
+/* Tableaux de résultats */
+table { border-collapse: collapse; width: 100%; background: #fff; font-size: .92rem; }
+th, td { padding: .45rem .7rem; border-bottom: 1px solid #e3e7ea; text-align: left; }
+th { background: #e8f3ee; text-transform: capitalize; }
+tr:hover td { background: #f8fbf9; }
+.compte, .vide { color: #666; font-size: .85rem; }
+
+/* Pages consultation / statistiques : menu + requête */
+.requetes { display: grid; grid-template-columns: 290px 1fr; gap: 1.5rem; align-items: start; }
+.menu a { display: block; padding: .5rem .7rem; color: #222; text-decoration: none; border-radius: 6px; }
+.menu a:hover { background: #e3ebe7; }
+.menu a.actif { background: #1f6f50; color: #fff; }
+.requetes section { background: #fff; padding: 1.2rem; border-radius: 8px; min-width: 0; overflow-x: auto; }
+.parametres { display: flex; gap: 1rem; align-items: end; flex-wrap: wrap; margin-bottom: 1rem; }
+details { margin-top: 1rem; }
+pre { background: #272c30; color: #e6e6e6; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+
+/* Formulaires */
+label { display: flex; flex-direction: column; gap: .2rem; font-size: .88rem; color: #444; }
+input, select, button { font: inherit; padding: .4rem .5rem; border: 1px solid #c5ccd1; border-radius: 5px; }
+button { background: #1f6f50; color: #fff; border: none; cursor: pointer; padding: .45rem 1rem; }
+button:hover { background: #185a41; }
+button.danger { background: #b23b3b; }
+
+/* Page gestion */
+.cartes { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
+.carte { background: #fff; padding: 1.2rem; border-radius: 8px; display: flex; flex-direction: column; gap: .7rem; }
+.carte form { display: flex; flex-direction: column; gap: .7rem; }
+.carte button { align-self: flex-start; }
+
+.succes, .erreur { padding: .7rem 1rem; border-radius: 6px; }
+.succes { background: #dff3e7; color: #1d5b3a; }
+.erreur { background: #fbe3e3; color: #8a2424; }
+
+/* Accueil */
+.chiffres { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+.chiffres div { background: #fff; padding: 1rem; border-radius: 8px; text-align: center; }
+.chiffres strong { display: block; font-size: 2rem; color: #1f6f50; }
+.chiffres span { color: #555; font-size: .9rem; }
+.onglets a { display: inline-block; margin: 0 .3rem .5rem 0; padding: .35rem .8rem; background: #fff;
+             border-radius: 20px; color: #1f6f50; text-decoration: none; }
+.onglets a.actif { background: #1f6f50; color: #fff; }
+
+@media (max-width: 800px) { .requetes { grid-template-columns: 1fr; } header { flex-direction: column; gap: .5rem; } }
