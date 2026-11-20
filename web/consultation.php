@@ -47,7 +47,7 @@ $requetes = [
             FROM emprunt e
             JOIN station s  ON s.id_station = e.id_station_depart
             JOIN adherent a ON a.id_adherent = e.id_adherent
-            WHERE e.date_heure_retour IS NULL
+            WHERE e.date_heure_arrivee IS NULL
             ORDER BY e.date_heure_depart",
     ],
     [
@@ -55,7 +55,7 @@ $requetes = [
         'params' => ['adherent'],
         'sql'    => "
             SELECT e.reference, sd.nom_station AS depart, e.date_heure_depart,
-                   sa.nom_station AS arrivee, e.date_heure_retour,
+                   sa.nom_station AS arrivee, e.date_heure_arrivee,
                    e.distance_parcourue AS distance_km
             FROM emprunt e
             JOIN station sd      ON sd.id_station = e.id_station_depart

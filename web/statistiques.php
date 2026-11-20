@@ -55,8 +55,8 @@ $requetes = [
                       AND e.date_heure_depart <  m.debut + INTERVAL '1 month') AS nb_departs,
                    (SELECT COUNT(*) FROM emprunt e
                     WHERE e.id_station_arrivee = s.id_station
-                      AND e.date_heure_retour >= m.debut
-                      AND e.date_heure_retour <  m.debut + INTERVAL '1 month') AS nb_arrivees
+                      AND e.date_heure_arrivee >= m.debut
+                      AND e.date_heure_arrivee <  m.debut + INTERVAL '1 month') AS nb_arrivees
             FROM station s
             CROSS JOIN mois m
             ORDER BY s.nom_station",

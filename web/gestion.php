@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 refuser("Ce vélo n'est pas disponible.");
             if ($velo['niveau_batterie'] < BATTERIE_MIN)
                 refuser('Batterie insuffisante (minimum ' . BATTERIE_MIN . ' %).');
-            if (ligne("SELECT 1 FROM emprunt WHERE id_adherent = :a AND date_heure_retour IS NULL",
+            if (ligne("SELECT 1 FROM emprunt WHERE id_adherent = :a AND date_heure_arrivee IS NULL",
                       ['a' => $p['adherent']]))
                 refuser('Cet adhérent a déjà un emprunt en cours.');
             executer("INSERT INTO emprunt (id_adherent, reference, id_station_depart)
@@ -46,13 +46,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             break;
 
         case 'rendre':
-            $e = ligne("SELECT * FROM emprunt WHERE id_emprunt = :e AND date_heure_retour IS NULL FOR UPDATE",
+            $e = ligne("SELECT * FROM emprunt WHERE id_emprunt = :e AND date_heure_arrivee IS NULL FOR UPDATE",
                        ['e' => $p['emprunt']]);
             if (!$e) refuser("Cet emprunt n'est pas en cours.");
             if (places_libres($p['station']) <= 0) refuser("Plus de borne libre dans cette station.");
             $distance = (float) str_replace(',', '.', $p['distance']);
             if ($distance < 0) refuser('La distance doit être positive.');
-            executer("UPDATE emprunt SET date_heure_retour = CURRENT_TIMESTAMP,
+            executer("UPDATE emprunt SET date_heure_arrivee = CURRENT_TIMESTAMP,
                              id_station_arrivee = :s, distance_parcourue = :d
                       WHERE id_emprunt = :e",
                      ['s' => $p['station'], 'd' => $distance, 'e' => $e['id_emprunt']]);
@@ -122,7 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $adherents      = "SELECT id_adherent, nom || ' ' || prenom FROM adherent ORDER BY nom, prenom";
 $adherents_dispo = "SELECT id_adherent, nom || ' ' || prenom FROM adherent a
                     WHERE NOT EXISTS (SELECT 1 FROM emprunt e
-                                      WHERE e.id_adherent = a.id_adherent AND e.date_heure_retour IS NULL)
+                                      WHERE e.id_adherent = a.id_adherent AND e.date_heure_arrivee IS NULL)
                     ORDER BY nom, prenom";
 $velos_dispo = "SELECT v.reference, v.reference || ' – ' || s.nom_station || ' (' || v.niveau_batterie || ' %)'
                 FROM velo v JOIN station s ON s.id_station = v.id_station
@@ -130,7 +130,7 @@ $velos_dispo = "SELECT v.reference, v.reference || ' – ' || s.nom_station || '
                 ORDER BY s.nom_station, v.niveau_batterie DESC";
 $emprunts_en_cours = "SELECT e.id_emprunt, e.reference || ' – ' || a.prenom || ' ' || a.nom
                       FROM emprunt e JOIN adherent a ON a.id_adherent = e.id_adherent
-                      WHERE e.date_heure_retour IS NULL ORDER BY e.reference";
+                      WHERE e.date_heure_arrivee IS NULL ORDER BY e.reference";
 $stations_libres = "SELECT s.id_station, s.nom_station || ' (' || (s.nb_bornes - COUNT(v.reference)) || ' places)'
                     FROM station s LEFT JOIN velo v ON v.id_station = s.id_station
                     GROUP BY s.id_station, s.nom_station, s.nb_bornes

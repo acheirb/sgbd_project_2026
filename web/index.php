@@ -12,7 +12,7 @@ $chiffres = ligne("
                                         AND niveau_batterie >= :min)        AS velos_empruntables,
            (SELECT COUNT(*) FROM velo WHERE etat = 'maintenance')           AS en_maintenance,
            (SELECT COUNT(*) FROM adherent)                                  AS adherents,
-           (SELECT COUNT(*) FROM emprunt WHERE date_heure_retour IS NULL)   AS emprunts_en_cours",
+           (SELECT COUNT(*) FROM emprunt WHERE date_heure_arrivee IS NULL)   AS emprunts_en_cours",
     ['min' => BATTERIE_MIN]);
 
 entete('Accueil');
@@ -34,6 +34,6 @@ entete('Accueil');
 </p>
 <?php
 if ($table) {
-    afficher_table(requete("SELECT * FROM $table ORDER BY 1"));
+    afficher_table(requete("SELECT * FROM $table ORDER BY 1 LIMIT 200"));
 }
 pied();
