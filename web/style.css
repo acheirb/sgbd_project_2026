@@ -25,6 +25,7 @@ tr:hover td { background: #f8fbf9; }
 .requetes section { background: #fff; padding: 1.2rem; border-radius: 8px; min-width: 0; overflow-x: auto; }
 .parametres { display: flex; gap: 1rem; align-items: end; flex-wrap: wrap; margin-bottom: 1rem; }
 details { margin-top: 1rem; }
+summary { cursor: pointer; }
 pre { background: #272c30; color: #e6e6e6; padding: 1rem; border-radius: 6px; overflow-x: auto; }
 
 /* Formulaires */
