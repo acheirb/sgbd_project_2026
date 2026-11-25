@@ -1,3 +1,6 @@
+-- Permet de relancer ce fichier dans la même session (un PREPARE existant provoquerait une erreur)
+DEALLOCATE ALL;
+
 PREPARE nb_total_emprunts AS (
     SELECT v.reference, COUNT(emp) as emprunts, COUNT(DISTINCT emp.id_adherent) as adherents FROM velo v
     LEFT JOIN emprunt emp on emp.reference = v.reference AND emp.date_heure_depart >= CURRENT_DATE - INTERVAL '30 days'
