@@ -29,9 +29,29 @@ PREPARE frequentation_stations(INTEGER) AS (
         ) AS nb_departs,
         (SELECT COUNT(*) FROM emprunt e
          WHERE e.id_station_arrivee = s.id_station
-           AND EXTRACT(MONTH FROM e.date_heure_retour) = $1
-           AND EXTRACT(YEAR  FROM e.date_heure_retour) = EXTRACT(YEAR FROM CURRENT_DATE)
+           AND EXTRACT(MONTH FROM e.date_heure_arrivee) = $1
+           AND EXTRACT(YEAR  FROM e.date_heure_arrivee) = EXTRACT(YEAR FROM CURRENT_DATE)
         ) AS nb_arrivees
     FROM station s
     ORDER BY s.id_station
+);
+
+PREPARE stats_maintenance AS (
+    SELECT i.reference, COUNT(*) AS nb_interventions, SUM(i.duree_heures) AS duree_indisponibilite FROM intervention i
+    WHERE i.date_intervention >= CURRENT_DATE - INTERVAL '1 year'
+    GROUP BY i.reference
+    ORDER BY nb_interventions DESC
+);
+
+PREPARE classement_stations AS (
+    SELECT nom_commune, nom_station, nb_departs FROM (
+        SELECT c.nom_commune, s.nom_station, COUNT(e.id_emprunt) AS nb_departs,
+            RANK() OVER (PARTITION BY c.id_commune ORDER BY COUNT(e.id_emprunt) DESC) AS rang
+        FROM station s
+        JOIN commune c ON c.id_commune = s.id_commune
+        LEFT JOIN emprunt e ON e.id_station_depart = s.id_station AND e.date_heure_depart >= CURRENT_DATE - INTERVAL '30 days'
+        GROUP BY c.id_commune, c.nom_commune, s.id_station, s.nom_station
+    ) AS t
+    WHERE rang <= 3
+    ORDER BY nom_commune, nb_departs DESC
 );
