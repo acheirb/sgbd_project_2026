@@ -18,7 +18,8 @@ Projet du module SGBD, 2e année informatique. L'énoncé complet se trouve dans
     ├── insert.sql                  # Jeu de données
     ├── consult.sql                 # Requêtes de consultation
     ├── stats.sql                   # Requêtes statistiques
-    └── update.sql                  # Ajouts, suppressions et modifications
+    ├── update.sql                  # Ajouts, suppressions et modifications
+    └── demo.sql                    # Démonstration des règles de gestion et des triggers
 ```
 
 ## État du projet
