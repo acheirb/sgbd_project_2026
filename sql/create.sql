@@ -61,7 +61,9 @@ CREATE TABLE velo
     CONSTRAINT ck_velo_batterie CHECK (niveau_batterie BETWEEN 0 AND 100),
     CONSTRAINT ck_velo_kilometrage CHECK (kilometrage >= 0),
     -- un vélo en cours d'utilisation n'est garé dans aucune station
-    CONSTRAINT ck_velo_utilisation_station CHECK (etat <> 'en_utilisation' OR id_station IS NULL)
+    CONSTRAINT ck_velo_utilisation_station CHECK (etat <> 'en_utilisation' OR id_station IS NULL),
+    -- un vélo disponible est forcément garé dans une station
+    CONSTRAINT ck_velo_disponible_station CHECK (etat <> 'disponible' OR id_station IS NOT NULL)
 );
 
 CREATE TABLE adherent
@@ -113,3 +115,128 @@ CREATE TABLE intervention
     CONSTRAINT fk_intervention_velo FOREIGN KEY (reference) REFERENCES velo (reference),
     CONSTRAINT ck_intervention_duree CHECK (duree_heures > 0)
 );
+
+-- ---------------------------------------------------------------------------
+-- Règles de disponibilité
+-- Hypothèses : batterie minimale pour emprunter = 20 %, adhésion valable 1 an.
+-- ---------------------------------------------------------------------------
+
+-- Un vélo ne peut pas faire l'objet de plusieurs emprunts simultanés
+CREATE UNIQUE INDEX uq_emprunt_velo_en_cours
+    ON emprunt (reference) WHERE date_heure_arrivee IS NULL;
+
+-- Un adhérent ne peut avoir qu'un seul emprunt en cours
+CREATE UNIQUE INDEX uq_emprunt_adherent_en_cours
+    ON emprunt (id_adherent) WHERE date_heure_arrivee IS NULL;
+
+-- Une station ne peut pas accueillir plus de vélos que sa capacité
+CREATE FUNCTION trg_velo_capacite() RETURNS TRIGGER AS $$
+DECLARE
+    v_bornes INTEGER;
+    v_nb     INTEGER;
+BEGIN
+    IF NEW.id_station IS NULL THEN
+        RETURN NEW;
+    END IF;
+    -- verrou sur la station : deux dépôts simultanés ne peuvent pas dépasser la capacité
+    SELECT nb_bornes INTO v_bornes FROM station WHERE id_station = NEW.id_station FOR UPDATE;
+    SELECT COUNT(*) INTO v_nb FROM velo
+    WHERE id_station = NEW.id_station AND reference <> NEW.reference;
+    IF v_nb >= v_bornes THEN
+        RAISE EXCEPTION 'Station % pleine (% bornes)', NEW.id_station, v_bornes;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_velo_capacite
+    BEFORE INSERT OR UPDATE OF id_station ON velo
+    FOR EACH ROW EXECUTE FUNCTION trg_velo_capacite();
+
+-- On ne peut pas réduire la capacité d'une station sous le nombre de vélos présents
+CREATE FUNCTION trg_station_bornes() RETURNS TRIGGER AS $$
+BEGIN
+    IF (SELECT COUNT(*) FROM velo WHERE id_station = NEW.id_station) > NEW.nb_bornes THEN
+        RAISE EXCEPTION 'Station % : % bornes, mais plus de vélos présents', NEW.id_station, NEW.nb_bornes;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_station_bornes
+    BEFORE UPDATE OF nb_bornes ON station
+    FOR EACH ROW EXECUTE FUNCTION trg_station_bornes();
+
+-- Départ d'un emprunt : vélo disponible, batterie suffisante, vélo présent dans la
+-- station de départ, adhésion valide. (Les trajets déjà terminés insérés d'un bloc,
+-- avec une date d'arrivée, ne sont pas contrôlés : ce sont des données historiques.)
+CREATE FUNCTION trg_emprunt_depart() RETURNS TRIGGER AS $$
+DECLARE
+    c_batterie_min CONSTANT INTEGER := 20;
+    v_etat         velo.etat%TYPE;
+    v_batterie     velo.niveau_batterie%TYPE;
+    v_station      velo.id_station%TYPE;
+    v_adhesion     adherent.date_adhesion%TYPE;
+BEGIN
+    IF NEW.date_heure_arrivee IS NOT NULL THEN
+        RETURN NEW;
+    END IF;
+
+    SELECT etat, niveau_batterie, id_station INTO v_etat, v_batterie, v_station
+    FROM velo WHERE reference = NEW.reference FOR UPDATE;
+
+    IF v_etat IS DISTINCT FROM 'disponible' THEN
+        RAISE EXCEPTION 'Le vélo % n''est pas disponible (état : %)', NEW.reference, v_etat;
+    END IF;
+    IF v_batterie < c_batterie_min THEN
+        RAISE EXCEPTION 'Le vélo % a une batterie insuffisante (% %%, minimum % %%)',
+            NEW.reference, v_batterie, c_batterie_min;
+    END IF;
+    IF v_station IS DISTINCT FROM NEW.id_station_depart THEN
+        RAISE EXCEPTION 'Le vélo % n''est pas dans la station de départ %', NEW.reference, NEW.id_station_depart;
+    END IF;
+
+    SELECT date_adhesion INTO v_adhesion FROM adherent WHERE id_adherent = NEW.id_adherent;
+    IF CAST(v_adhesion + INTERVAL '1 year' AS DATE) < CAST(NEW.date_heure_depart AS DATE) THEN
+        RAISE EXCEPTION 'L''adhésion de l''adhérent % a expiré', NEW.id_adherent;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_emprunt_depart
+    BEFORE INSERT ON emprunt
+    FOR EACH ROW EXECUTE FUNCTION trg_emprunt_depart();
+
+-- Le vélo quitte sa station au départ de l'emprunt
+CREATE FUNCTION trg_emprunt_apres_depart() RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.date_heure_arrivee IS NULL THEN
+        UPDATE velo SET etat = 'en_utilisation', id_station = NULL WHERE reference = NEW.reference;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_emprunt_apres_depart
+    AFTER INSERT ON emprunt
+    FOR EACH ROW EXECUTE FUNCTION trg_emprunt_apres_depart();
+
+-- À la restitution : le vélo est garé dans la station d'arrivée (capacité contrôlée
+-- par trg_velo_capacite) et son kilométrage augmente de la distance parcourue
+CREATE FUNCTION trg_emprunt_arrivee() RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE velo
+    SET kilometrage = kilometrage + COALESCE(NEW.distance_parcourue, 0),
+        etat        = CASE WHEN etat = 'en_utilisation' THEN 'disponible' ELSE etat END,
+        id_station  = CASE WHEN etat = 'en_utilisation' THEN NEW.id_station_arrivee ELSE id_station END
+    WHERE reference = NEW.reference;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_emprunt_arrivee
+    AFTER UPDATE OF date_heure_arrivee ON emprunt
+    FOR EACH ROW
+    WHEN (OLD.date_heure_arrivee IS NULL AND NEW.date_heure_arrivee IS NOT NULL)
+    EXECUTE FUNCTION trg_emprunt_arrivee();

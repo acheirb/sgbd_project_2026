@@ -108,10 +108,12 @@ INSERT INTO velo (reference, date_mise_service, kilometrage, etat, niveau_batter
     ('V0028', CURRENT_DATE - 170,  300.0, 'disponible',     83, 1,  2),
     ('V0029', CURRENT_DATE - 150,  270.0, 'disponible',     72, 2,  7),
     ('V0030', CURRENT_DATE - 130,  240.0, 'disponible',     48, 1,  6),
-    ('V0031', CURRENT_DATE - 180,  480.0, 'en_utilisation', 65, 1, NULL),
-    ('V0032', CURRENT_DATE - 170,  450.0, 'en_utilisation', 55, 1, NULL),
-    ('V0033', CURRENT_DATE - 160,  350.0, 'en_utilisation', 50, 2, NULL),
-    ('V0034', CURRENT_DATE - 150,  320.0, 'en_utilisation', 72, 4, NULL),
+    -- V0031 à V0034 : insérés 'disponible' dans leur station de départ ; l'insertion de leur
+    -- emprunt en cours (plus bas) les passe en 'en_utilisation' via le trigger
+    ('V0031', CURRENT_DATE - 180,  480.0, 'disponible',     65, 1,  1),
+    ('V0032', CURRENT_DATE - 170,  450.0, 'disponible',     55, 1,  1),
+    ('V0033', CURRENT_DATE - 160,  350.0, 'disponible',     50, 2,  2),
+    ('V0034', CURRENT_DATE - 150,  320.0, 'disponible',     72, 4,  3),
     ('V0035', CURRENT_DATE - 500, 2500.0, 'maintenance',    15, 1, NULL),
     ('V0036', CURRENT_DATE - 450, 2100.0, 'maintenance',     0, 4, NULL),
     ('V0037', CURRENT_DATE - 430, 1900.0, 'maintenance',    25, 2, NULL),
